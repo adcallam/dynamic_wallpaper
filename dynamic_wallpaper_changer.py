@@ -4,7 +4,7 @@ from datetime import datetime
 import calendar
 from suntime import Sun
 
-change_based_on_time = False
+change_based_on_time = True
 
 def set_wallpaper(path, monitor):
     runCommand(['setwp', f'--monitor={monitor}', f'--file={path}'])
