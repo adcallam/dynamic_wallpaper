@@ -6,18 +6,48 @@ from suntime import Sun
 import sys
 
 DYNAMIC_BRIGHTNESS = False
-VOLUME_ENABLED = False
+MASTER_VOL = 0 #From 0 to 100
 PROP_UPDATE_RATE = 900 # Property refresh rate for wallpaper in seconds (such as brightness)
 WP_PATH_PREFIX = "C:\\Users\\andre\\OneDrive\\Pictures\\Wallpapers\\"
 LIVELY_EXE_PATH = "C:\\Users\\andre\\AppData\\Local\\Programs\\Lively Wallpaper\\Lively.exe"
 
-def set_wp(path):
-    run_command(['setwp', f'--monitor={1}', f'--file={path}'])
+# latitude and longitude of London, Ontario
+LDN_ON_LAT = 42.9849
+LDN_ON_LONG = -81.2453
+
+def set_wp(wp_path):
+    run_command(['setwp', f'--monitor={1}', f'--file={wp_path}'])
     return
 
-def set_vol(volume_level):
+def set_default_wp_properties():
+    #set all parameters to default values
+    change_property("saturation", 0, 1)
+    change_property("brightness", 0, 1) 
+    change_property("hue", 0, 1)
+    change_property("contrast", 0, 1)
+    change_property("gamma", 0, 1)
+    change_property("speed", 1, 1)
+
+def set_wp_vol(master_vol, wp_file):
+    MAX_VOL = 100
+    
+    if wp_file == "treehouse_spring.mp4":
+        eq_vol = 50
+    elif wp_file == "treehouse_summer.mp4":
+        eq_vol = 70
+    elif wp_file == "treehouse_fall.mp4":
+        eq_vol = 100
+    elif wp_file == "treehouse_winter.mp4":
+        eq_vol = 90
+    elif wp_file == "treehouse_christmas.mp4":
+        eq_vol = 100
+    elif wp_file == "treehouse_halloween.mp4":
+        eq_vol = 70
+
+    vol = round(eq_vol*(master_vol/MAX_VOL), 0)
+
     #volume_level should be 0-100
-    run_command(['volume', f'--volume={volume_level}'])
+    run_command(['volume', f'--volume={vol}'])
     return
 
 def change_property(name, value):
@@ -71,11 +101,7 @@ def calc_new_brightness():
     MIN_BRIGHTNESS = -20
     BRIGHTNESS_RANGE = MAX_BRIGHTNESS-MIN_BRIGHTNESS
 
-    # latitude and longitude of London, Ontario
-    latitude = 42.9849
-    longitude = -81.2453
-
-    sun = Sun(latitude, longitude)
+    sun = Sun(LDN_ON_LAT, LDN_ON_LONG)
 
     current_time = datetime.now()
 
@@ -97,72 +123,20 @@ def calc_new_brightness():
 
     return brightness
 
-# Select wallpaper based on season
-def select_wp(season):
-    
-    if season == "spring":
-        wp_file = "treehouse-spring-morning-desktop-wallpaperwaifu.com.mp4"
-        wp_vol = 50
-    elif season == "summer":
-        wp_file = "treehouse-summer-rain-desktop-wallpaperwaifu.com.mp4"
-        wp_vol = 70
-    elif season == "fall":
-        wp_file = "treehouse_autumn.mp4"
-        wp_vol = 100
-    elif season == "winter":
-        wp_file = "treehouse_winter_sound.mp4"
-        wp_vol = 90
-    elif season == "christmas":
-        wp_file = "treehouse-winter-holidays-desktop-wallpaperwaifu.com.mp4"
-        wp_vol = 100
-    elif season == "halloween":
-        wp_file = "treehouse_halloween.mp4"
-        wp_vol = 70
-    else:
-        wp_file = "car-camping-in-the-rain-moewalls.com.mp4"
-        wp_vol = 40
-    
-    if not VOLUME_ENABLED:
-        wp_vol = 0
-
-    return wp_file, wp_vol
-
-# Function to run the wallpaper changer continuously
-def run_wallpaper_changer():
-    
-    # set wallpaper and volume based on season
-    season = get_current_season()
-    wp_file, wp_vol = select_wp(season)
-    wp_path = WP_PATH_PREFIX + wp_file
-    set_wp(wp_path)
-    set_vol(wp_vol)
-
-    # update brightness of wallpaper based on daylight outside
-    while DYNAMIC_BRIGHTNESS:
-        try:          
-            change_property("brightness", calc_new_brightness()) # change brightness of wallpaper based on time of day relative to sunrise and sunset for current day
-            time.sleep(PROP_UPDATE_RATE)  # change wallpaper every 15 minutes to account for brightness changes
-        except Exception as e:
-            # handle any exceptions that may occur during the process
-            print(f"Error: {e}")
-            sys.exit()
-    
-    if not DYNAMIC_BRIGHTNESS:
-        #set all parameters to default values
-        try:          
-            change_property("saturation", 0, 1)
-            change_property("brightness", 0, 1) 
-            change_property("hue", 0, 1)
-            change_property("contrast", 0, 1)
-            change_property("gamma", 0, 1)
-            change_property("speed", 1, 1)
-        except Exception as e:
-            # handle any exceptions that may occur during the process
-            print(f"Error: {e}")
-            sys.exit()
-    sys.exit()
-
 subprocess.Popen([LIVELY_EXE_PATH])
 time.sleep(3) #ensures Lively is fully opened before executing the rest of the program
 
-run_wallpaper_changer()
+# set wallpaper and volume based on season
+season = get_current_season()
+wp_file = "treehouse_" + season + ".mp4"
+wp_path = WP_PATH_PREFIX + wp_file
+set_wp(wp_path)
+set_default_wp_properties()
+set_wp_vol(MASTER_VOL, wp_file)
+
+# update brightness of wallpaper based on daylight outside
+while DYNAMIC_BRIGHTNESS:
+    change_property("brightness", calc_new_brightness()) # change brightness of wallpaper based on time of day relative to sunrise and sunset for current day
+    time.sleep(PROP_UPDATE_RATE)  # change wallpaper every 15 minutes to account for brightness changes
+
+sys.exit()
