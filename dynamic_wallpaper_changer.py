@@ -4,7 +4,7 @@ from datetime import datetime
 import calendar
 from suntime import Sun
 
-change_based_on_time = True
+change_based_on_time = False
 
 def set_wallpaper(path, monitor):
     runCommand(['setwp', f'--monitor={monitor}', f'--file={path}'])
@@ -131,8 +131,6 @@ def run_wallpaper_changer():
     wallpaper_path = lively_wallpaper_path_prefix + wallpaper_file_name
     set_wallpaper(wallpaper_path, 1)
     set_volume(wallpaper_volume)
-
-    time.sleep(5)
 
     # update brightness of wallpaper based on daylight outside
     while change_based_on_time:
