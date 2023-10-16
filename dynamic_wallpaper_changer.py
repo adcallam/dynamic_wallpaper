@@ -1,14 +1,23 @@
+'''
+A Python program that sets a wallpaper using the Lively Wallpaper application.
+
+The program is executed on PC startup using a script in the windows startup folder.
+
+The program applies unique animated wallpapers (with audio) based on the current season or holiday.
+
+The program can continually update the brightness of the wallpaper throughout
+the day to match the estimated amount of daylight outside.
+'''
+
 import time
 import subprocess
 from datetime import datetime
 import calendar
-import sys
 from suntime import Sun
 
-
-DYNAMIC_BRIGHTNESS = False
-MASTER_VOL = 50 # From 0 to 100
-MAX_VOL = 100
+DYNAMIC_BRIGHTNESS = False # Control to set whether the brightness should change with time of day
+MASTER_VOL = 50  # The desired wallpaper volume level (from 0 to 100)
+MAX_VOL = 100 # The maximum value that can be set for a wallpaper's volume using Lively
 PROP_UPDATE_RATE = 900 # Property refresh rate for wallpaper in seconds (such as brightness)
 WP_PATH_PREFIX = "C:\\Users\\andre\\OneDrive\\Pictures\\Wallpapers\\"
 LIVELY_EXE_PATH = "C:\\Users\\andre\\AppData\\Local\\Programs\\Lively Wallpaper\\Lively.exe"
@@ -28,16 +37,16 @@ def set_wp(wp_path):
 def reset_wp_properties():
     '''Applies default property values to whatever wallpaper is currently in use.'''
 
-    change_property("saturation", value = 0)
-    change_property("brightness", value = 0)
-    change_property("hue", value = 0)
-    change_property("contrast", value = 0)
-    change_property("gamma", value = 0)
-    change_property("speed", value = 1)
+    change_property("saturation", value=0)
+    change_property("brightness", value=0)
+    change_property("hue", value=0)
+    change_property("contrast", value=0)
+    change_property("gamma", value=0)
+    change_property("speed", value=1)
 
 def set_wp_vol(master_vol, wp_file):
     '''Sets the volume level for the wallpaper that is in use.
-    
+
     This is calculated using a combination of the desired master volume, 
     as well as each wallpaper's specific equalization volume, which is meant 
     to account for the differences between the volume levels of the different wallpapers. 
@@ -72,29 +81,28 @@ def run_command(args):
 
     startup_info = subprocess.STARTUPINFO()
     startup_info.dwFlags |= subprocess.STARTF_USESHOWWINDOW
-    subprocess.run(['Livelycu'] + args, startupinfo=startup_info)
+    subprocess.run(['Livelycu'] + args, startupinfo=startup_info, check = False)
 
-# Function to get the current weather
 def get_current_season():
     '''Determines the current season based on their meteorological definitions.
-    
+
     The function will return the current season as a String based on what day of the year it is. 
     It will return "Christmas" on December 25th and "Halloween" on October 31st as there are special
     wallpapers prepared for those two specific days of the year.
     '''
 
-    leapyear=False
+    leapyear = False
 
     # Check if current year is leap year
     if calendar.isleap(datetime.today().year):
         leapyear = True
 
     # Get the current day of the year
-    doy = datetime.today().timetuple().tm_yday # Returns 1 to 366
+    doy = datetime.today().timetuple().tm_yday  # Returns 1 to 366
 
     # Adjust for leapyear
-    if doy>=60 and leapyear:
-        doy=doy-1
+    if doy >= 60 and leapyear:
+        doy = doy-1
 
     # "Day of Year" ranges for the northern hemisphere
     spring = range(60, 152)
@@ -116,8 +124,8 @@ def get_current_season():
 
     return season
 
-def calc_new_brightness():
-    '''Returns a wallpaper brightness value based on the amount of daylight outside.'''
+def update_wp_brightness():
+    '''Sets a wallpaper brightness value based on the amount of daylight outside.'''
 
     sun = Sun(LDN_ON_LAT, LDN_ON_LONG)
 
@@ -137,14 +145,15 @@ def calc_new_brightness():
     if current_time_minutes < sunrise_time_minutes or current_time_minutes > sunset_time_minutes:
         brightness = MIN_BRIGHTNESS  # lowest brightness during darkness
     elif current_time_minutes > sunrise_time_minutes and current_time_minutes < sunset_time_minutes:
-        brightness = round((-1.0*(BRIGHTNESS_RANGE/((sunrise_time_minutes-((sunrise_time_minutes+sunset_time_minutes)/2))**2)))*((current_time_minutes-((sunset_time_minutes+sunrise_time_minutes)/2))**2)+MAX_BRIGHTNESS, 0)
+        brightness = round((-1.0*(BRIGHTNESS_RANGE/((sunrise_time_minutes-((sunrise_time_minutes+sunset_time_minutes)/2))**2)))
+                           * ((current_time_minutes-((sunset_time_minutes+sunrise_time_minutes)/2))**2)+MAX_BRIGHTNESS, 0)
 
-    return brightness
+    change_property("brightness", brightness)
 
 def main():
     '''Executes the main program.'''
 
-    subprocess.Popen([LIVELY_EXE_PATH])
+    subprocess.Popen([LIVELY_EXE_PATH])  # Opens the Lively Wallpaper program
     time.sleep(3) # Ensures Lively is fully opened before executing the rest of the program
 
     # Set wallpaper and volume based on season
@@ -155,14 +164,10 @@ def main():
     reset_wp_properties()
     set_wp_vol(MASTER_VOL, wp_file)
 
-    # Update brightness of wallpaper based on daylight outside
+    # Periodically update brightness of wallpaper based on daylight outside
     while DYNAMIC_BRIGHTNESS:
-        # Change brightness of wallpaper according to daylight outside
-        change_property("brightness", calc_new_brightness())
-        # Pause before next brightness value update is executed
+        update_wp_brightness()
         time.sleep(PROP_UPDATE_RATE)
-
-    sys.exit()
 
 if __name__ == '__main__':
     main()
