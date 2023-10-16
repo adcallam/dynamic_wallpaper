@@ -122,8 +122,6 @@ def get_current_season():
         if doy == 359:
             season = 'christmas'
 
-    season = 'winter'
-
     return season
 
 def update_wp_brightness():
