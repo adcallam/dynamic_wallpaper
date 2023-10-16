@@ -102,7 +102,7 @@ def select_wallpaper(season):
         wallpaper_file = "treehouse_summer.mp4"
         wallpaper_volume = 70
     elif season == "fall":
-        wallpaper_file = "treehouse_autumn.mp4"
+        wallpaper_file = "treehouse_fall.mp4"
         wallpaper_volume = 100
     elif season == "winter":
         wallpaper_file = "treehouse_winter.mp4"
@@ -131,6 +131,8 @@ def run_wallpaper_changer():
     wallpaper_path = lively_wallpaper_path_prefix + wallpaper_file_name
     set_wallpaper(wallpaper_path, 1)
     set_volume(wallpaper_volume)
+
+    time.sleep(5)
 
     # update brightness of wallpaper based on daylight outside
     while change_based_on_time:
