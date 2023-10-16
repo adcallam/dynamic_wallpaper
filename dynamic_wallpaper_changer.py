@@ -96,19 +96,19 @@ def brightness_level():
 def select_wallpaper(season):
     
     if season == "spring":
-        wallpaper_file = "treehouse-spring-morning-desktop-wallpaperwaifu.com.mp4"
+        wallpaper_file = "treehouse_spring.mp4"
         wallpaper_volume = 50
     elif season == "summer":
-        wallpaper_file = "treehouse-summer-rain-desktop-wallpaperwaifu.com.mp4"
+        wallpaper_file = "treehouse_summer.mp4"
         wallpaper_volume = 70
     elif season == "fall":
         wallpaper_file = "treehouse_autumn.mp4"
         wallpaper_volume = 100
     elif season == "winter":
-        wallpaper_file = "treehouse_winter_sound.mp4"
+        wallpaper_file = "treehouse_winter.mp4"
         wallpaper_volume = 90
     elif season == "christmas":
-        wallpaper_file = "treehouse-winter-holidays-desktop-wallpaperwaifu.com.mp4"
+        wallpaper_file = "treehouse_christmas.mp4"
         wallpaper_volume = 100
     elif season == "halloween":
         wallpaper_file = "treehouse_halloween.mp4"
